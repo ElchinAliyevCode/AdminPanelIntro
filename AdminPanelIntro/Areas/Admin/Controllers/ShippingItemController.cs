@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AdminPanelIntro.Areas.Admin.Controllers;
 [Area("Admin")]
+[AutoValidateAntiforgeryToken]
 public class ShippingItemController : Controller
 {
     private readonly ProniaDbContext _context;
@@ -48,6 +49,40 @@ public class ShippingItemController : Controller
         _context.ShippingItems.Remove(item);
         _context.SaveChanges();
 
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public IActionResult Update(int id)
+    {
+        var shippingItem=_context.ShippingItems.Find(id);
+        if (shippingItem == null)
+        {
+            return NotFound();
+        }
+        return View(shippingItem);
+    }
+
+    [HttpPost]
+    public IActionResult Update(ShippingItem shippingItem)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View();
+        }
+
+        var existShippingItem= _context.ShippingItems.Find(shippingItem.Id);
+        if (existShippingItem == null)
+        {
+            return NotFound();
+        }
+
+        existShippingItem.Name = shippingItem.Name;
+        existShippingItem.Description = shippingItem.Description;
+        existShippingItem.ImageUrl= shippingItem.ImageUrl;
+
+        _context.ShippingItems.Update(existShippingItem);
+        _context.SaveChanges();
         return RedirectToAction(nameof(Index));
     }
 }
